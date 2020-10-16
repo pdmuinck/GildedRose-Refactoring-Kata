@@ -6,7 +6,12 @@ class GildedRose(object):
     The latter method is backwards compatible with update_quality and contains
     some fixes and a new feature: it can handle a conjured item. 
 
-    update_quality simply updates the quality of items.
+    update_quality simply updates the quality of items and serves a list of Item 
+    objects.
+
+    update_quality_v2 does the same thing but provides an implementation to process
+    subclasses from Item like GenericItem, TicketItem, AgedBrieItem, LegendaryItem
+    and ConjuredItem.
     """
 
     def __init__(self, items):
