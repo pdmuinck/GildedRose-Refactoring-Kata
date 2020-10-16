@@ -10,7 +10,7 @@ class GildedRose(object):
     objects.
 
     update_quality_v2 does the same thing but provides an implementation to process
-    subclasses from Item like GenericItem, TicketItem, AgedBrieItem, LegendaryItem
+    subclasses from Item like NormalItem, TicketItem, AgedBrieItem, LegendaryItem
     and ConjuredItem.
     """
 
@@ -19,12 +19,27 @@ class GildedRose(object):
     
     
     def update_quality_v2(self):
+        """
+        This method throws an error when trying to call with the original Item 
+        object. Please use this method with NormalItem, TicketItem, AgedBrieItem, LegendaryItem
+        or ConjuredItem.
+
+        This method will update the quality value of the provided items.
+        """
         for item in self.items:
             item.update_sell_in()
             item.update_quality()
 
 
     def update_quality(self):
+        """
+        This method only accepts instances of type Item.
+
+        It will NOT accept instances of NormalItem, TicketItem, AgedBrieItem, LegendaryItem
+        or ConjuredItem.
+
+        This method will update the quality value of the provided items.
+        """
         for item in self.items:
             if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert":
                     if item.quality > 0:
