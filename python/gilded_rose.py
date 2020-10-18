@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from items import StockItem
+from items import StockItem, Item
 class GildedRose(object):
     """
     This class contains two methods: update_quality and update_quality_v2.
@@ -20,9 +20,9 @@ class GildedRose(object):
     
     def update_quality_v2(self):
         """
-        This method throws an error when trying to call with the original Item 
-        object. Please use this method with NormalItem, TicketItem, AgedBrieItem, LegendaryItem
-        or ConjuredItem.
+        This method raises an exception when trying to call with the original Item 
+        object. Please use this method with AgeableStockItem, DegradableStockItem, DurableStockItem,
+        ConjuredStockItem.
 
         This method will update the quality value of the provided items.
         """
@@ -38,36 +38,41 @@ class GildedRose(object):
         """
         This method only accepts instances of type Item.
 
-        It will NOT accept instances of NormalItem, TicketItem, AgedBrieItem, LegendaryItem
-        or ConjuredItem.
+        It will NOT accept instances of AgeableStockItem, DegradableStockItem, DurableStockItem,
+        ConjuredStockItem.
 
         This method will update the quality value of the provided items.
         """
-        for item in self.items:
-            if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert":
+        if(all(isinstance(item, Item) for item in self.items)):
+            for item in self.items:
+                if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert":
                     if item.quality > 0:
                         if item.name != "Sulfuras, Hand of Ragnaros":
                             item.quality = item.quality - 1
-            else:
-                if item.quality < 50:
-                    item.quality = item.quality + 1
-                    if item.name == "Backstage passes to a TAFKAL80ETC concert":
-                        if item.sell_in < 11:
-                            if item.quality < 50:
-                                item.quality = item.quality + 1
-                        if item.sell_in < 6:
-                            if item.quality < 50:
-                                item.quality = item.quality + 1
-            if item.name != "Sulfuras, Hand of Ragnaros":
-                item.sell_in = item.sell_in - 1
-            if item.sell_in < 0:
-                if item.name != "Aged Brie":
-                    if item.name != "Backstage passes to a TAFKAL80ETC concert":
-                        if item.quality > 0:
-                            if item.name != "Sulfuras, Hand of Ragnaros":
-                                item.quality = item.quality - 1
-                    else:
-                        item.quality = item.quality - item.quality
                 else:
                     if item.quality < 50:
                         item.quality = item.quality + 1
+                        if item.name == "Backstage passes to a TAFKAL80ETC concert":
+                            if item.sell_in < 11:
+                                if item.quality < 50:
+                                    item.quality = item.quality + 1
+                            if item.sell_in < 6:
+                                if item.quality < 50:
+                                    item.quality = item.quality + 1
+                if item.name != "Sulfuras, Hand of Ragnaros":
+                    item.sell_in = item.sell_in - 1
+                if item.sell_in < 0:
+                    if item.name != "Aged Brie":
+                        if item.name != "Backstage passes to a TAFKAL80ETC concert":
+                            if item.quality > 0:
+                                if item.name != "Sulfuras, Hand of Ragnaros":
+                                    item.quality = item.quality - 1
+                        else:
+                            item.quality = item.quality - item.quality
+                    else:
+                        if item.quality < 50:
+                            item.quality = item.quality + 1
+        else:
+            raise Exception("Cannot process V2 StockItem objects")
+
+        

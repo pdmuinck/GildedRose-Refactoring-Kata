@@ -5,8 +5,13 @@ This module defines classes related to stock items at gilded rose.
 
 We have the original Item class with fields name, sell_in and quality.
 
-Next we have a new StockItem class that holds fields name, item_type, sell_in
+Next we have a new StockItem class that holds fields name, sell_in
 and quality.
+
+Subclasses for StockItem are DegradableStockItem, DurableStockItem, AgeableStockItem, ConjuredStockItem
+and BackStageTicketItem.
+
+All sub classes implement their version of the update_quality method.
 """
 
 UNIT_OF_DAILY_DEGRADATION = 1
@@ -57,8 +62,9 @@ class StockItem:
 class DegradableStockItem(StockItem):
     """
     This class is meant to identify stock items that degrade over time.
-    Simply put the quality value will decrease every day.
-    By default the degradation multiplier is 1.
+    Elements that influence the degradation are: degradation_multiplier and the UNIT_OF_DAILY_DEGRADATION.
+    By default the degradation_multiplier is 1, if some goods degrade at a greater pace you specify this
+    value.
     """
     def __init__(self, name, sell_in, quality, degradation_multiplier=1):
         super().__init__(name, sell_in, quality)
@@ -66,10 +72,10 @@ class DegradableStockItem(StockItem):
     
     def change_quality(self):
         """
-        Subtracts the UNIT_OF_DAILY_DEGRADATION member from the quality field.
-        If the sell date is expires, the item degrades twice as fast.
+        Subtracts the UNIT_OF_DAILY_DEGRADATION multiplied with degradation_multiplier member
+        from the quality field.
+        If the sell date expires, the item degrades twice as fast.
         The quality of an item is never negative.
-        Applies the degradation multiplier.
         """
         if(self.quality > MINIMUM_QUALITY and self.sell_date_expired()):
             self.quality -= 2 * self.degradation_multiplier * UNIT_OF_DAILY_DEGRADATION
@@ -97,7 +103,7 @@ class AgeableStockItem(StockItem):
 
 class DurableStockItem(StockItem):
     """
-    Describes an item of which the quality doesn't change.
+    Describes an item of which the quality  doesn't change.
     """
     def __init__(self, name, sell_in, quality):
         super().__init__(name, sell_in, quality)

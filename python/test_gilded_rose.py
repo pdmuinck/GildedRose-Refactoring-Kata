@@ -6,10 +6,14 @@ from items import Item, StockItem, AgeableStockItem, DurableStockItem, Degradabl
 
 class GildedRoseTest(unittest.TestCase):
     """
-    This class tests methods update_quality_v2() against update_quality() for
-    backwards compatability and correctness.
-
-    Assertions are done between the results of both methods.
+    This class tests about 7 features for both V1 and V2 versions of the api GildedRose:
+    - degradable items should decrease in quality over time
+    - degradable items should decrease in quality faster when the sell date it hit
+    - degradable items cannot have a negative quality value
+    - ageable items should increase in quality over time
+    - ageable items should have a maximum quality value of 50
+    - backstage passes should increase in value over time, with increments when selling date approaches
+    - durable items cannot be modified
     """
     def test_update_quality_v1_deducts_quality_value_of_degradable_item(self):
         items = [Item("foo", 1, 1)]
@@ -97,15 +101,15 @@ class GildedRoseTest(unittest.TestCase):
     
     def test_update_quality_v1_does_not_change_quality_of_durable_item(self):
         items = [Item("Sulfuras, Hand of Ragnaros", 10, 80)]
-        gided_rose = GildedRose(items)
-        gided_rose.update_quality()
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
         self.assertEqual(80, items[0].quality)
         self.assertEqual(10, items[0].sell_in)
     
     def test_update_quality_v2_does_not_change_quality_of_durable_item_(self):
         items = [DurableStockItem("Sulfuras, Hand of Ragnaros", 10, 80)]
-        gided_rose = GildedRose(items)
-        gided_rose.update_quality_v2()
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality_v2()
         self.assertEqual(80, items[0].quality)
         self.assertEqual(10, items[0].sell_in)
     
@@ -116,6 +120,17 @@ class GildedRoseTest(unittest.TestCase):
     def test_instantiate_item_with_negative_quality_should_work(self):
         item = Item("foo", 2, -20)
         self.assertEqual(-20, item.quality)
+    
+    def test_update_quality_v2_with_V1_item_should_raise_exception(self):
+        gilded_rose = GildedRose([Item("foo", 1, 2)])
+        with self.assertRaises(Exception):
+            gilded_rose.update_quality_v2()
+
+    def test_update_quality_v1_with_V2_items_should_raise_exception(self):
+        gilded_rose = GildedRose([StockItem("foo", 1, 2)])
+        with self.assertRaises(Exception):
+            gilded_rose.update_quality()
+
 
 if __name__ == '__main__':
     unittest.main()
