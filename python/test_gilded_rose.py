@@ -2,7 +2,7 @@
 import unittest
 
 from gilded_rose import GildedRose
-from items import Item, StockItem, DurableStockItem, DegradableStockItem, ConjuredStockItem, BackStageTicketItem
+from items import Item, StockItem, AgeableStockItem, DurableStockItem, DegradableStockItem, ConjuredStockItem, BackStageTicketItem
 
 class GildedRoseTest(unittest.TestCase):
     """
@@ -11,100 +11,111 @@ class GildedRoseTest(unittest.TestCase):
 
     Assertions are done between the results of both methods.
     """
-    def test_degradable_item_will_decrease_in_quality_when_sell_date_reaches(self):
-        """
-        This method will test an Item and a DegradableStockItem instance 
-        for decreasing quality value when sell date reaches.
-        """
-        items_v1 = [Item("foo", 1, 1)]
-        items_v2 = [DegradableStockItem("foo", 1, 1)]
-        gilded_rose_v1 = GildedRose(items_v1)
-        gilded_rose_v2 = GildedRose(items_v2)
+    def test_update_quality_v1_deducts_quality_value_of_degradable_item(self):
+        items = [Item("foo", 1, 1)]
+        gilded_rose_v1 = GildedRose(items)
         gilded_rose_v1.update_quality()
+        self.assertEqual(0, items[0].sell_in)
+        self.assertEqual(0, items[0].quality)
+    
+    def test_update_quality_v2_deducts_quality_value_of_degradable_item(self):
+        items = [DegradableStockItem("foo", 1, 1)]
+        gilded_rose_v2 = GildedRose(items)
         gilded_rose_v2.update_quality_v2()
-        # assert original code
-        self.assertEqual(0, items_v1[0].sell_in)
-        self.assertEqual(0, items_v1[0].quality)
-        # compare v2 with original
-        self._compare_versions(items_v1[0], items_v2[0]) 
-
-    def test_degradable_item_when_sell_date_is_reached(self):
-        """
-        This method tests a normal item to degrade faster when it is expired.
-        """
-        items_v1 = [Item("foo", 0, 4)]
-        items_v2 = [DegradableStockItem("foo", 0, 4)]
-        gilded_rose_v1 = GildedRose(items_v1)
+        self.assertEqual(0, items[0].sell_in)
+        self.assertEqual(0, items[0].quality)
+    
+    def test_update_quality_v1_deducts_more_quality_of_degradable_item_when_sell_date_is_reached(self):
+        items = [Item("foo", 0, 4)]
+        gilded_rose_v1 = GildedRose(items)
         gilded_rose_v1.update_quality()
-        gilded_rose_v2 = GildedRose(items_v2)
-        gilded_rose_v2.update_quality_v2()
+        self.assertEqual(2, items[0].quality)
+        self.assertEqual(-1, items[0].sell_in)
 
-        #assert original code
-        self.assertEqual(2, items_v1[0].quality)
-        self.assertEqual(-1, items_v1[0].sell_in)
+    def test_update_quality_v2_deducts_more_quality_of_degradable_item_when_sell_date_is_reached(self):
+        items = [DegradableStockItem("foo", 0, 4)]
+        gilded_rose_v1 = GildedRose(items)
+        gilded_rose_v1.update_quality_v2()
+        self.assertEqual(2, items[0].quality)
+        self.assertEqual(-1, items[0].sell_in)
 
-        #assert V2
-        self._compare_versions(items_v1[0], items_v2[0])
+    def test_update_quality_does_not_set_negative_quality_value(self):
+        items = [Item("foo", 3, 0)]
+        gilded_rose_v1 = GildedRose(items)
+        gilded_rose_v1.update_quality()
+        self.assertEqual(0, items[0].quality)
 
-    def test_degradable_item_cannot_have_negative_quality(self):
-        
-        items_v1 = [Item("foo", 0, -5), Item("foo", 0, 0)]
-        gided_rose = GildedRose(items_v1)
-        gided_rose.update_quality()
-        # assert original code
-        self.assertEqual(-5, items_v1[0].quality)
-        self.assertEqual(0, items_v1[1].quality)
+    def test_update_quality_v2_does_not_set_negative_quality_value(self):
+        items = [DegradableStockItem("foo", 3, 0)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality_v2()
+        self.assertEqual(0, items[0].quality)
+    
+    def test_update_quality_increases_quality_of_ageable_items(self):
+        items = [Item("Aged Brie", 1, 10)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(11, items[0].quality)
 
-    def test_aged_brie_item_increases_in_quality_the_older_it_gets(self):
-        """
-        Method that tests whether a durable item increases in quality the 
-        older it gets.
-        """
-        items_v1 = [Item("Aged Brie", 1, 10), 
-            Item("Backstage passes to a TAFKAL80ETC concert", 10, 10), 
+    def test_update_quality_increases_quality_of_ageable_items(self):
+        items = [AgeableStockItem("foo", 1, 10)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality_v2()
+        self.assertEqual(11, items[0].quality)
+
+    def test_update_quality_increases_quality_backstage_tickets(self):
+        items = [Item("Backstage passes to a TAFKAL80ETC concert", 10, 10), 
             Item("Backstage passes to a TAFKAL80ETC concert", 4, 10), 
             Item("Backstage passes to a TAFKAL80ETC concert", 0, 10)]
-        gided_rose = GildedRose(items_v1)
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(12, items[0].quality)
+        self.assertEqual(13, items[1].quality)
+        self.assertEqual(0, items[2].quality)
+    
+    def test_update_quality_v2_increases_quality_backstage_tickets(self):
+        items = [BackStageTicketItem("foo", 10, 10), 
+            BackStageTicketItem("bar", 4, 10), 
+            BackStageTicketItem("pj", 0, 10)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality_v2()
+        self.assertEqual(12, items[0].quality)
+        self.assertEqual(13, items[1].quality)
+        self.assertEqual(0, items[2].quality)
+
+    def test_update_quality_does_not_increase_quality_when_maximum_is_hit(self):
+        items = [Item("Aged Brie", 10, 50)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(50, items[0].quality)
+
+    def test_update_quality_v2_does_not_increase_quality_when_maximum_is_hit(self):
+        items = [AgeableStockItem("foo", 10, 50)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality_v2()
+        self.assertEqual(50, items[0].quality)
+    
+    def test_update_quality_v1_does_not_change_quality_of_durable_item(self):
+        items = [Item("Sulfuras, Hand of Ragnaros", 10, 80)]
+        gided_rose = GildedRose(items)
         gided_rose.update_quality()
-        self.assertEqual(11, items_v1[0].quality)
-        self.assertEqual(13, items_v1[2].quality)
-        self.assertEqual(12, items_v1[1].quality)
-        self.assertEqual(0, items_v1[3].quality)
-        
-
-    def test_quality_value_never_increases_when_greater_or_equal_than(self, upper_bound= 50):
-        """
-        This method tests that the quality value never increases when it is 
-        greater or equal than an upper bound.
-
-        Args:
-            upper_bound (int, optional): the maximum bound. Defaults to 50.
-        """
-        more_than_bound = upper_bound + 10
-        items_v1 = [Item("foo", 10, more_than_bound), Item("bar", 10, upper_bound)]
-        gided_rose = GildedRose(items_v1)
-        gided_rose.update_quality()
-        self.assertEqual(more_than_bound - 1, items_v1[0].quality)
-        self.assertLess(upper_bound - 1, items_v1[0].quality)
-
-    def test_legendary_item_has_fixed_quality_value_and_sell_value(self):
-        """
-        This method tests that the legendary items_v1 have a fixed amount of 
-        quality.
-        """
-        items_v1 = [Item("Sulfuras, Hand of Ragnaros", 10, 80), Item("Sulfuras, Hand of Ragnaros", 10, 90)]
-        gided_rose = GildedRose(items_v1)
-        gided_rose.update_quality()
-        self.assertEqual(80, items_v1[0].quality)
-        self.assertEqual(90, items_v1[1].quality)
-        self.assertEqual(10, items_v1[0].sell_in)
-
-    def _compare_versions(self, item_v1, item_v2):
-        self.assertEqual(item_v1.name, item_v2.name)
-        self.assertEqual(item_v1.sell_in, item_v2.sell_in)
-        self.assertEqual(item_v1.quality, item_v2.quality)
-
-
+        self.assertEqual(80, items[0].quality)
+        self.assertEqual(10, items[0].sell_in)
+    
+    def test_update_quality_v2_does_not_change_quality_of_durable_item_(self):
+        items = [DurableStockItem("Sulfuras, Hand of Ragnaros", 10, 80)]
+        gided_rose = GildedRose(items)
+        gided_rose.update_quality_v2()
+        self.assertEqual(80, items[0].quality)
+        self.assertEqual(10, items[0].sell_in)
+    
+    def test_instantiate_stock_item_with_negative_quality_should_raise_exception(self):
+        with self.assertRaises(Exception):
+            StockItem("foo", 3, -20)
+    
+    def test_instantiate_item_with_negative_quality_should_work(self):
+        item = Item("foo", 2, -20)
+        self.assertEqual(-20, item.quality)
 
 if __name__ == '__main__':
     unittest.main()

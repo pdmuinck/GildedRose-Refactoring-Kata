@@ -32,10 +32,14 @@ class StockItem:
     This class represents an item in stock for gilded rose. 
     This class is used in the V2 version of the API.
     Fields: name, sell_in, quality
+    StockItem cannot be instantiated with negative quality value, exception is
+    raised.
     """
     def __init__(self, name, sell_in, quality):
         self.name = name
         self.sell_in = sell_in
+        if(quality < 0): raise Exception("Cannot create a stock item with "
+        + "negative quality.")
         self.quality = quality
 
     def change_sell_in(self):
@@ -97,18 +101,19 @@ class DurableStockItem(StockItem):
     """
     def __init__(self, name, sell_in, quality):
         super().__init__(name, sell_in, quality)
+
+    def change_sell_in(self):
+        """
+        sell_in will not change for durable items
+        """
+        pass
+
     
     def change_quality(self):
         """
-        Quality will not change for durable times, so this method will throw
-        and exception.
+        Quality will not change for durable times.
         """
-        raise DurableItemIsFixedException("A durable item's quality value cannot be changed")
-
-class DurableItemIsFixedException(Exception):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        pass
 
 class ConjuredStockItem(DegradableStockItem):
     """
