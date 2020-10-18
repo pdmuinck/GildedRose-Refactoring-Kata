@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from items import StockItem
 class GildedRose(object):
     """
     This class contains two methods: update_quality and update_quality_v2.
@@ -10,8 +10,8 @@ class GildedRose(object):
     objects.
 
     update_quality_v2 does the same thing but provides an implementation to process
-    subclasses from Item like NormalItem, TicketItem, AgedBrieItem, LegendaryItem
-    and ConjuredItem.
+    subclasses from StockItem like DegradableStockItem, AgeableStockItem,
+    DurableStockItem, ConjuredStockItem and BackStageTicketItem
     """
 
     def __init__(self, items):
@@ -26,10 +26,13 @@ class GildedRose(object):
 
         This method will update the quality value of the provided items.
         """
-        for item in self.items:
-            item.update_sell_in()
-            item.update_quality()
-
+        if(all(isinstance(item, StockItem) for item in self.items)):
+            for item in self.items:
+                item.change_sell_in()
+                item.change_quality()
+        else:
+            raise Exception("Cannot process V1 Item objects")
+        
 
     def update_quality(self):
         """
